@@ -4,6 +4,8 @@ from db.database import init_db
 from api.auth import routes as auth_routes
 from api.companies import routes as companies_routes
 from api.admin import routes as admin_routes
+from api.questions import routes as questions_routes
+from api.questions import voting_routes
 
 app = FastAPI()
 
@@ -14,3 +16,5 @@ async def startup_event():
 app.include_router(auth_routes.router, prefix="/auth", tags=["Authentication"])
 app.include_router(companies_routes.router, prefix="/companies", tags=["Companies"])
 app.include_router(admin_routes.router, prefix="/admin", tags=["Admin"])
+app.include_router(questions_routes.router)
+app.include_router(voting_routes.router)

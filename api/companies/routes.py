@@ -50,10 +50,11 @@ async def update_company(company_id: str, update_data: dict, current_user: dict 
     return {"message": "Company details updated successfully"}
 
 @router.get("/{company_id}")
-async def get_company_details(company_id: str):
+async def get_company_details(company_id: str, current_user: dict = Depends(get_current_user)):
     company = await Company.get(company_id)
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
+    
     return company
 
 @router.post("/{company_id}/access-request")

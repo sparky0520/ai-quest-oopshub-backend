@@ -21,3 +21,13 @@ async def verify_admin_access(token: str = Depends(get_current_user)):
     if not user or user.role not in ["admin", "hr"]:
         raise HTTPException(status_code=403, detail="Forbidden: Admin access required")
     return user
+
+async def verify_in_company(token: str = Depends(get_current_user)):
+    user_id = token.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    user = await User.get(user_id)
+    if not user or not user.company_id or user.status != "joined":
+        raise HTTPException(status_code=403, detail="Forbidden: User not part of a company")
+    return user
