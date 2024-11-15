@@ -8,11 +8,16 @@ router = APIRouter()
 
 @router.get("/", dependencies=[Depends(get_current_user)])
 async def list_companies():
-    return {"companies": "List of companies"}
+    companies = await Company.all().to_list()
+    return companies
 
 @router.post("/")
 async def create_company(company_data: dict, current_user: dict = Depends(get_current_user)):
-    current_user_doc = await User.find_one(User.id == current_user["sub"])
+    current_user_doc = await User.get(current_user["sub"])
+    if current_user_doc is None:
+        print(current_user["sub"])
+        raise HTTPException(status_code=404, detail="User not found")
+
     if current_user_doc.company_id:
         raise HTTPException(status_code=400, detail="User is already part of a company")
     
@@ -32,7 +37,7 @@ async def create_company(company_data: dict, current_user: dict = Depends(get_cu
 
 @router.patch("/{company_id}")
 async def update_company(company_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
-    company = await Company.find_one(Company.id == company_id)
+    company = await Company.get(company_id)
     if not company or company.admin_user_id != current_user["sub"]:
         raise HTTPException(status_code=403, detail="Access denied")
 
@@ -46,18 +51,18 @@ async def update_company(company_id: str, update_data: dict, current_user: dict 
 
 @router.get("/{company_id}")
 async def get_company_details(company_id: str):
-    company = await Company.find_one(Company.id == company_id)
+    company = await Company.get(company_id)
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     return company
 
 @router.post("/{company_id}/access-request")
 async def request_access(company_id: str, current_user: dict = Depends(get_current_user)):
-    company = await Company.find_one(Company.id == company_id)
+    company = await Company.get(company_id)
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
-    current_user_doc = await User.find_one(User.id == current_user["sub"])
+    current_user_doc = await User.get(current_user["sub"])
     if current_user_doc.status == "joined":
         raise HTTPException(status_code=400, detail="User already part of a company")
     

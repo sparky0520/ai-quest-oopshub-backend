@@ -17,7 +17,7 @@ async def verify_admin_access(company_id: str, token: str = Depends(verify_token
     if not user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    user = await User.find_one(User.id == user_id)
+    user = await User.get(user_id)
     if not user or user.company_id != company_id or user.role not in ["admin", "hr"]:
         raise HTTPException(status_code=403, detail="Forbidden: Admin access required")
     return user
