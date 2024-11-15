@@ -12,12 +12,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     return payload
 
-async def verify_admin_access(company_id: str, token: str = Depends(verify_token)):
+async def verify_admin_access(token: str = Depends(get_current_user)):
     user_id = token.get("sub")
     if not user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     user = await User.get(user_id)
-    if not user or user.company_id != company_id or user.role not in ["admin", "hr"]:
+    if not user or user.role not in ["admin", "hr"]:
         raise HTTPException(status_code=403, detail="Forbidden: Admin access required")
     return user
