@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from bson import ObjectId
 from db.models.question import Question
 from db.models.answer import Answer
+from db.models.company import Company
 from db.models.comment import Comment
 
 from db.models.user import User
@@ -19,7 +20,7 @@ async def create_question(question_data: dict, current_user: User = Depends(veri
         description=question_data["description"],
         tags=question_data.get("tags", []),
         company_id=current_user.company_id,
-        user_id=current_user["sub"],
+        user_id=str(current_user.id),
         upvotes=0,
     )
     await question.insert()
@@ -38,10 +39,17 @@ async def get_questions(
     if tags:
         query["tags"] = {"$in": tags}
     
+    if sort_by == "upvotes":
+        sort_by = Question.upvotes
+    elif sort_by == "created_at":
+        sort_by = Question.created_at
+    else:
+        raise HTTPException(status_code=400, detail="Invalid sort_by value. Use 'upvotes' or 'created_at'")
+    
     query["company_id"] = current_user.company_id
     questions = (
         Question.find(query)
-        .sort(-1 if sort_by == "upvotes" else -1)
+        .sort(-sort_by)
         .skip((page - 1) * page_size)
         .limit(page_size)
     )
@@ -58,10 +66,13 @@ async def get_question_by_id(question_id: str, current_user: User = Depends(veri
         raise HTTPException(status_code=403, detail="Access denied")
     
     answers = await Answer.find(Answer.question_id == question_id).to_list()
-    for answer in answers:
-        answer.comments = await Comment.find(Comment.answer_id == answer.id).to_list()
+    answers_json = [dict(answer) for answer in answers]
+    # print(answers_json)
+    for answer in answers_json:
+        answer['id'] = str(answer['id'])
+        answer['comments'] = await Comment.find(Comment.answer_id == str(answer['id'])).to_list()
 
-    return {"question": question, "answers": answers}
+    return {"question": question, "answers": answers_json}
 
 # Answer a Question
 @router.post("/questions/{question_id}/answers")
@@ -73,7 +84,7 @@ async def answer_question(question_id: str, answer_data: dict, current_user: Use
     answer = Answer(
         question_id=question_id,
         answer=answer_data["answer"],
-        user_id=current_user["sub"],
+        user_id=str(current_user.id),
         upvotes=0,
         is_ai=False,
     )
@@ -90,7 +101,7 @@ async def comment_on_answer(answer_id: str, comment_data: dict, current_user: Us
     comment = Comment(
         answer_id=answer_id,
         comment=comment_data["comment"],
-        user_id=current_user["sub"],
+        user_id=str(current_user.id),
     )
     await comment.insert()
     return {"message": "Comment added successfully"}
@@ -103,7 +114,7 @@ async def generate_ai_answer_route(question_id: str, current_user: User = Depend
         raise HTTPException(status_code=404, detail="Question not found")
 
     # Check if AI Answering is enabled for the company
-    company = await User.find_one(User.id == current_user["sub"]).company
+    company = await Company.get(current_user.company_id)
     if not company.ai_answer_enabled:
         raise HTTPException(status_code=403, detail="AI-generated answers are disabled")
 
