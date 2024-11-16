@@ -2,17 +2,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from db.models.company import Company
 from db.models.user import User
-from utils.dependencies import get_current_user
+from utils.dependencies import verify_user
 
 router = APIRouter()
 
-@router.get("/", dependencies=[Depends(get_current_user)])
+@router.get("/", dependencies=[Depends(verify_user)])
 async def list_companies():
     companies = await Company.all().to_list()
     return companies
 
 @router.post("/")
-async def create_company(company_data: dict, current_user: dict = Depends(get_current_user)):
+async def create_company(company_data: dict, current_user: dict = Depends(verify_user)):
     current_user_doc = await User.get(current_user["sub"])
     if current_user_doc is None:
         print(current_user["sub"])
@@ -36,7 +36,7 @@ async def create_company(company_data: dict, current_user: dict = Depends(get_cu
     return {"message": "Company created successfully", "company_id": str(new_company.id)}
 
 @router.patch("/{company_id}")
-async def update_company(company_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+async def update_company(company_id: str, update_data: dict, current_user: dict = Depends(verify_user)):
     company = await Company.get(company_id)
     if not company or company.admin_user_id != current_user["sub"]:
         raise HTTPException(status_code=403, detail="Access denied")
@@ -50,7 +50,7 @@ async def update_company(company_id: str, update_data: dict, current_user: dict 
     return {"message": "Company details updated successfully"}
 
 @router.get("/{company_id}")
-async def get_company_details(company_id: str, current_user: dict = Depends(get_current_user)):
+async def get_company_details(company_id: str, current_user: dict = Depends(verify_user)):
     company = await Company.get(company_id)
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
@@ -58,7 +58,7 @@ async def get_company_details(company_id: str, current_user: dict = Depends(get_
     return company
 
 @router.post("/{company_id}/access-request")
-async def request_access(company_id: str, current_user: dict = Depends(get_current_user)):
+async def request_access(company_id: str, current_user: dict = Depends(verify_user)):
     company = await Company.get(company_id)
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
