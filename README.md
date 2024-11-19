@@ -1,37 +1,46 @@
 # AI Quest Backend
+
 ## Setup Instructions
 
 1. Clone the repository:
 
-  Run the following command to clone the repository to your local machine:
+Run the following command to clone the repository to your local machine:
 
-  `git clone https://github.com/CWSwastik/ai-quest-oopshub-backend`
+`git clone https://github.com/CWSwastik/ai-quest-oopshub-backend`
 
 2. Install dependencies:
-  
-  Make sure you have pip and virtualenv installed. Then, navigate to the project directory and install the required dependencies:
 
-  `pip install -r requirements.txt`
+Make sure you have pip and virtualenv installed. Then, navigate to the project directory and install the required dependencies:
 
-3. Run the FastAPI app in development mode:
+`pip install -r requirements.txt`
 
-  Start the FastAPI server by running the following command:
+3. Create a `.env` file:
 
-  `fastapi dev main.py`
+Create a `.env` file in the project root directory following the format in the `.env.example` file.
 
-  This will run the app in development mode with auto-reloading enabled.
+4. Run the FastAPI app in development mode:
 
-4. Access the API docs:
+Start the FastAPI server by running the following command:
 
-  Once the server is running, you can access the interactive API documentation at:
+`fastapi dev main.py`
 
-  `http://localhost:8000/docs`
+This will run the app in development mode with auto-reloading enabled.
 
-  Alternatively, you can view the ReDoc-based documentation at:
+5. Access the API docs:
 
-  `http://localhost:8000/redoc`
+Once the server is running, you can access the interactive API documentation at:
+
+`http://localhost:8000/docs`
+
+Alternatively, you can view the ReDoc-based documentation at:
+
+`http://localhost:8000/redoc`
 
 ### Notes:
 
-  Ensure you have Python 3.10+ installed.
-  If you're using a virtual environment, activate it before installing the dependencies.
+Ensure you have Python 3.10+ installed.
+If you're using a virtual environment, activate it before installing the dependencies.
+
+```
+
+```
