@@ -5,6 +5,7 @@ from db.models.user import User
 from db.models.question import Question
 from db.models.answer import Answer
 from utils.dependencies import verify_in_company
+from utils.ai import add_to_db
 
 router = APIRouter(tags=["Voting"])
 
@@ -15,6 +16,7 @@ async def upvote_question(question_id: str, current_user: User = Depends(verify_
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
     question.upvotes += 1
+
     await question.save()
     return {"message": "Question upvoted successfully"}
 
@@ -25,6 +27,12 @@ async def upvote_answer(answer_id: str, current_user: User = Depends(verify_in_c
     if not answer:
         raise HTTPException(status_code=404, detail="Answer not found")
     answer.upvotes += 1
+
+    if answer.upvotes == 1:
+
+        question = await Question.get(answer.question_id)
+        await add_to_db(question.title, question.description, answer.answer)
+
     await answer.save()
     return {"message": "Answer upvoted successfully"}
 

@@ -6,3 +6,10 @@ python-jose[cryptography]
 bcrypt==4.0.1
 passlib[bcrypt]
 python-dotenv
+chromadb
+langchain
+langchain-groq
+langchain-chroma
+langchain-community
+langchain-huggingface
+sentence-transformers

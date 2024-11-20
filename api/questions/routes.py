@@ -12,7 +12,6 @@ from utils.ai import generate_ai_answer
 
 router = APIRouter(tags=["Questions"])
 
-# Create a Question
 @router.post("/questions")
 async def create_question(question_data: dict, current_user: User = Depends(verify_in_company)):
     question = Question(
@@ -24,6 +23,7 @@ async def create_question(question_data: dict, current_user: User = Depends(veri
         upvotes=0,
     )
     await question.insert()
+        
     return {"message": "Question created successfully", "question_id": str(question.id)}
 
 # Get Questions (with pagination, filters, and sorting)
@@ -55,7 +55,6 @@ async def get_questions(
     )
     return await questions.to_list()
 
-# Get Question by ID (with answers and comments)
 @router.get("/questions/{question_id}")
 async def get_question_by_id(question_id: str, current_user: User = Depends(verify_in_company)):
     question = await Question.get(question_id)
@@ -74,7 +73,6 @@ async def get_question_by_id(question_id: str, current_user: User = Depends(veri
 
     return {"question": question, "answers": answers_json}
 
-# Answer a Question
 @router.post("/questions/{question_id}/answers")
 async def answer_question(question_id: str, answer_data: dict, current_user: User = Depends(verify_in_company)):
     question = await Question.get(question_id)
@@ -91,7 +89,6 @@ async def answer_question(question_id: str, answer_data: dict, current_user: Use
     await answer.insert()
     return {"message": "Answer added successfully"}
 
-# Comment on an Answer
 @router.post("/answers/{answer_id}/comments")
 async def comment_on_answer(answer_id: str, comment_data: dict, current_user: User = Depends(verify_in_company)):
     answer = await Answer.get(answer_id)
@@ -106,7 +103,6 @@ async def comment_on_answer(answer_id: str, comment_data: dict, current_user: Us
     await comment.insert()
     return {"message": "Comment added successfully"}
 
-# Generate AI Answer
 @router.post("/questions/{question_id}/generate-answer")
 async def generate_ai_answer_route(question_id: str, current_user: User = Depends(verify_in_company)):
     question = await Question.get(question_id)
